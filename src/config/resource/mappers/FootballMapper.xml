@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aspire.crawler.dao.FootballMapperDao">
+	<insert id="addBocai" parameterType="java.util.List">
+		INSERT INTO t_bocai_name
+		  (
+		   	bocai_name
+		   )
+		<foreach collection="list" item="list" separator="union all">
+			select
+			#{list} from dual
+		</foreach>
+	</insert>
+	
+	<insert id="addTeamInfo" parameterType="com.aspire.crawler.bean.TeamInfo">
+		INSERT INTO t_team_info
+		  (
+		   	week,
+		   	matches,
+		   	league,
+		   	date,
+		   	time,
+		   	host_team,
+		   	guest_team,
+		   	host_ranking,
+		   	guest_ranking,
+		   	host_result,
+		   	guest_result,
+		   	create_time
+		   )values(
+		   	#{week},
+		   	#{matches},
+		   	#{league},
+		   	#{date},
+		   	#{time},
+		   	#{host_team},
+		   	#{guest_team},
+		   	#{host_ranking},
+		   	#{guest_ranking},
+		   	#{host_result},
+		   	#{guest_result},
+		   	SYSDATE()
+		   )
+	</insert>
+	
+	<select id="getBocaiList" resultType="com.aspire.crawler.bean.BocaiInfo">
+		SELECT 
+				id,
+				bocai_name,
+				bocai_type
+		  FROM t_bocai_name
+	</select>
+	
+	<select id="checkFirstOdds" resultType="Integer">
+		SELECT count(1)
+		  FROM t_first_odds 
+		 WHERE exists(
+		 	select id from t_team_info t
+		 		where t.week=#{week} and t.matches=#{matches}
+		 		and t.date=#{date} and t.time=#{time}
+		 )and bocai_id = #{bocaiId} and team_id = #{teamId}
+	</select>
+	
+	<select id="getTeamInfoId" resultType="Integer">
+		 	select id from t_team_info t
+		 		where t.week=#{week} and t.matches=#{matches}
+		 		and t.date=#{date} and t.time=#{time}
+	</select>
+	
+	
+	<insert id="addFirstOdds" parameterType="com.aspire.crawler.bean.FirstOddsInfo">
+		INSERT INTO t_first_odds
+		  (
+		   	team_id,
+		   	bocai_id,
+		   	first_odds_sheng,
+		   	first_odds_ping,
+		   	first_odds_fu,
+		   	loss_ration,
+		   	same_odds_url,
+		   	create_time
+		   )values(
+		   	#{team_id},
+		   	#{bocai_id},
+		   	#{first_odds_sheng},
+		   	#{first_odds_ping},
+		   	#{first_odds_fu},
+		   	#{loss_ration},
+		   	#{same_odds_url},
+		   	SYSDATE()
+		   )
+	</insert>
+	
+	<insert id="addNewOdds" parameterType="com.aspire.crawler.bean.NewOddsInfo">
+		INSERT INTO t_new_odds
+		  (
+		   	team_id,
+		   	bocai_id,
+		   	new_odds_sheng,
+		   	new_odds_ping,
+		   	new_odds_fu,
+		   	loss_ration,
+		   	create_time
+		   )values(
+		   	#{team_id},
+		   	#{bocai_id},
+		   	#{new_odds_sheng},
+		   	#{new_odds_ping},
+		   	#{new_odds_fu},
+		   	#{loss_ration},
+		   	SYSDATE()
+		   )
+	</insert>
+	
+	<insert id="addKailiCha" parameterType="com.aspire.crawler.bean.KailiChaInfo">
+		INSERT INTO t_kaili_cha_info
+		  (
+		   	team_id,
+		   	bocai_id,
+		   	kaili_cha_sheng,
+		   	kaili_cha_ping,
+		   	kaili_cha_fu,
+		   	create_time
+		   )values(
+		   	#{team_id},
+		   	#{bocai_id},
+		   	#{kaili_cha_sheng},
+		   	#{kaili_cha_ping},
+		   	#{kaili_cha_fu},
+		   	SYSDATE()
+		   )
+	</insert>
+
+	<insert id="addSameOdds" parameterType="com.aspire.crawler.bean.SameOdds">
+		INSERT INTO t_game_same_odds
+		(
+		team_id,
+		bocai_id,
+		league,
+		host_team,
+		guest_team,
+		odds_sheng_begin,
+		odds_ping_begin,
+		odds_fu_begin,
+		odds_sheng_end,
+		odds_ping_end,
+		odds_fu_end,
+		host_result,
+		guest_result,
+		result,
+		game_date,
+		game_time,
+		create_time
+		)values(
+		#{team_id},
+		#{bocai_id},
+		#{league},
+		#{host_team},
+		#{guest_team},
+		#{odds_sheng_begin},
+		#{odds_ping_begin},
+		#{odds_fu_begin},
+		#{odds_sheng_end},
+		#{odds_ping_end},
+		#{odds_fu_end},
+		#{host_result},
+		#{guest_result},
+		#{result},
+		#{game_date},
+		#{game_time},
+		SYSDATE()
+		)
+	</insert>
+	<select id="checkSameOdds" resultType="Integer">
+		SELECT count(1)
+		FROM t_game_same_odds
+		WHERE bocai_id = #{bocaiId} and team_id = #{teamId}
+	</select>
+
+	<select id="getFirstOdds" resultType="com.aspire.crawler.bean.FirstOddsInfo">
+		SELECT
+		id,
+		team_id,
+		bocai_id,
+		first_odds_sheng,
+		first_odds_ping,
+		first_odds_fu,
+		loss_ration,
+		same_odds_url,
+		create_time
+		FROM t_first_odds fo
+		where not exists (select * from t_game_same_odds so where so.team_id = fo.team_id and so.bocai_id = fo.bocai_id)
+	</select>
+
+</mapper>
