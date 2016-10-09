@@ -1,5 +1,6 @@
 package com.aspire.crawler.timerManager;
 
+import com.aspire.crawler.function.UpdateResult;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.log4j.Logger;
 
@@ -20,21 +21,17 @@ public class UpdateResultThread extends MybatisConfigThread{
 
 	public void run(){
 
-			/*while(true){
+			while(true){
 				SqlSession session = ssf.openSession();
-				PutbocaiMemcached.putbocai(session);
-				log4j.info("加载菠菜完成。。");
-				TeamFunc.doCrawler(session);
-				log4j.info("扫描对阵双方信息完成。。。");
-				ScanFirstOdds.doScan(session);
+				log4j.info("开始处理没有比分结果的记录。。。");
+				UpdateResult.doUpdateResult(session);
+				log4j.info("没有比分结果的记录处理完成。。。");
 				try {
 					Thread.sleep(10000*2);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
-			}*/
-			
-			
+			}
 	}
 
 }

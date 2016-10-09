@@ -192,4 +192,8 @@
 		where not exists (select team_id,bocai_id from t_game_same_odds)
 	</select>
 
+	<select id="getUnresultList" resultType="com.aspire.crawler.bean.TeamInfo">
+		select date from t_team_info ti where ti.host_result = -1 or guest_result = -1 group by date
+	</select>
+
 </mapper>

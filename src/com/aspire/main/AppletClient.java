@@ -18,8 +18,9 @@ public class AppletClient {
 		new SingleStart().checkStart();	
 		log4j.info("启动采集");
 		//new BocaiManagerThread().run();
-		//new UpdateResultThread().run();
 		new TeamManagerThread().run();
 		//new GameSameOddsThread().run();
+
+		//new UpdateResultThread().run();
 	}
 }

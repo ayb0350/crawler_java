@@ -67,6 +67,7 @@ public class ScanFirstOdds {
 			String[] dateData = eleDate.text().split("期");
  			for(String datedata : dateData){
 				String url1 = "http://www.okooo.com/jingcai/shuju/peilv/"+datedata.trim();
+				//String url1="http://www.okooo.com/jingcai/shuju/peilv/2016-10-02/";
 				String content1 = conntectUtils.getContent(url1);
 				Document doc1 = Jsoup.parse(content1);
 				Elements elePage = doc1.select("table.Pager td");
@@ -76,7 +77,9 @@ public class ScanFirstOdds {
 				}
 				int page = Integer.valueOf(elePage.get(1).text().substring(1, 2));
 				log4j.info(datedata.trim()+"共有"+page+"页");
+
 				for(int m=1;m<=page;m++){
+					log4j.info("开始查询第"+m+"页...");
 					/*String url = null;
 					if(page == 1){
 						url = url1;
@@ -94,6 +97,9 @@ public class ScanFirstOdds {
 					}
 					String date_time = null;
 					String wc = null;
+					int i_ = 0;
+					Elements elements1 = doc.select("div.clearfix table tr:not(.tableh)").select("tr:not(.titlebg)");
+					int length= elements1.size();
 					for(int i=0;i<size;i++){
 						int j = (i+1)%3;
 						switch(j){
@@ -111,14 +117,18 @@ public class ScanFirstOdds {
 						int matches = Integer.valueOf(wc.substring(2));
 						String date = date_time.substring(0, 5);
 						String time = date_time.substring(5);
+											//log4j.info(elements1.text());
+						//String firstBocai = elements1.first().text().trim().split(" ")[0];
+											//log4j.info("每个表格第一个bocai："+firstBocai);
+						//int tableSize = elements1.text().split(firstBocai).length-1;
+											//log4j.info("共有表格数量："+tableSize);
+						//System.out.println("5*i_:"+(5*i_)+"   5*(i_+1)-1:"+(5*(i_+1))+"   elements1.size():"+elements1.size());
 
-						Elements elements1 = doc.select("div.clearfix table tr:not(.tableh)").select("tr:not(.titlebg)");
-											log4j.info(elements1.text());
-						String firstBocai = elements1.first().text().trim().split(" ")[0];
-											log4j.info("每个表格第一个bocai："+firstBocai);
-						int tableSize = elements1.text().split(firstBocai).length-1;
-											log4j.info("共有表格数量："+tableSize);
-						for(int k=0;k<tableSize;k++){
+						for(int k=(5*i_);k<(5*(i_+1));k++){
+							//System.out.println(elements1.size()+"---"+k);
+							if(elements1.size()<=k){
+								break;
+							}
 							FirstOddsInfo firstOdds = new FirstOddsInfo();
 							NewOddsInfo newOdds = new NewOddsInfo();
 							KailiChaInfo kailiCha = new KailiChaInfo();
@@ -126,9 +136,12 @@ public class ScanFirstOdds {
 							if(team_id == null){
 								return false;
 							}
+							/*String[] oddsInfo = elements1.get(i__*15+i_).text().trim().split(" ");
+							System.out.println("i:"+i+"  i_:"+i_+"  i__"+i__+"   i__*15+i_:"+(i__*15+i_));
+							String href = "http://www.okooo.com"+elements1.get(i__*15+i_).getElementsByClass("detail").attr("href");*/
 							String[] oddsInfo = elements1.get(k).text().trim().split(" ");
-							System.out.println("i:"+i+"  k:"+((k+(i+1)/3)-1));
-							//String href = "http://www.okooo.com"+elements1.get(k+(i-2)*5).getElementsByClass("detail").attr("href");
+							//System.out.println("i:"+i+"  i_:"+i_+"  k:"+k);
+							String href = "http://www.okooo.com"+elements1.get(k).getElementsByClass("detail").attr("href");
 							//System.out.println(href);
 							if((client.get(oddsInfo[0])==null)){
 								continue;
@@ -150,7 +163,7 @@ public class ScanFirstOdds {
 							firstOdds.setFirst_odds_ping(f_ping);
 							firstOdds.setFirst_odds_fu(f_fu);
 							firstOdds.setLoss_ration(f_pei);
-							//firstOdds.setSame_odds_url(href);
+							firstOdds.setSame_odds_url(href);
 							double n_sheng = Double.parseDouble(FileUtils.parseNewOdds(oddsInfo[5]));
 							double n_ping = Double.parseDouble(FileUtils.parseNewOdds(oddsInfo[6]));
 							double n_fu = Double.parseDouble(FileUtils.parseNewOdds(oddsInfo[7]));
@@ -175,8 +188,8 @@ public class ScanFirstOdds {
 							Transaction trans = new JdbcTransaction(sqlSession.getConnection());
 							trans.commit();
 						}
+						i_=i_+1;
 					}
-
 				}
 			}
 		} catch (TimeoutException e) {

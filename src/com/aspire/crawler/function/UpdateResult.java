@@ -1,6 +1,9 @@
 package com.aspire.crawler.function;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
 import java.util.concurrent.TimeoutException;
 
 import net.rubyeye.xmemcached.MemcachedClient;
@@ -40,13 +43,105 @@ public class UpdateResult {
 
 	public static boolean doUpdateResult(SqlSession sqlSession){
 		process = true;
-		
-		
-		
-		
-		
-		
-		
+		ConnectUtils conntectUtils = new ConnectUtils();
+		List<String> list = dao.getUnresultList(sqlSession);
+		Calendar cal = Calendar.getInstance();
+		int year = cal.get(Calendar.YEAR);
+		for(int k=0;k<list.size();k++){
+			String datedata = list.get(k);
+
+			String url1 = "http://www.okooo.com/jingcai/shuju/peilv/"+year+"-"+datedata.trim();
+			String content1 = conntectUtils.getContent(url1);
+			Document doc1 = Jsoup.parse(content1);
+			Elements elePage = doc1.select("table.Pager td");
+			if(elePage.text().equals("暂时没有添加记录")){
+				log4j.info(year+"-"+datedata.trim()+"暂时没有添加记录");
+				continue;
+			}
+			int page = Integer.valueOf(elePage.get(1).text().substring(1, 2));
+			log4j.info(year+"-"+datedata.trim()+"共有"+page+"页");
+			for(int m=1;m<=page;m++){
+				String url = url1;
+				/*if(page == 1){
+					url = url1;
+				}else{
+					url = url1+"/?"
+							+ "LeagueID=463,7,18,372,384,498,679&HandicapNumber=-1,1&BetDate="
+							+ "3,4,5&MakerType=AuthoriteBooks&PageID="+m+"&HasEnd=1";
+				}*/
+				String contentNew = conntectUtils.getContent(url);
+				Document doc = Jsoup.parse(contentNew);
+				Elements elements = doc.select("div.magazineDateTit b,div.magazineDateTit span,"
+						+ "div.pai p:not(.pai_p2),div.pai1 p:not(.pai_p2)");
+				int size = elements.size();
+				if(size == 0){
+					continue;
+				}
+				//					log4j.info(size);
+				TeamInfo teamInfo = new TeamInfo();
+				String wc = null;
+				//					log4j.info(elements.text());
+				boolean checkDate = true;
+				for(int i=0;i<size&&checkDate;i++){
+					//						log4j.info(elements.get(i).text());
+					String info = elements.get(i).text().trim();
+					int j = (i+1)%7;
+					switch(j){
+						case 1:
+							wc = info;
+							String week = info.substring(0,2);
+							int matches = Integer.valueOf(info.substring(2));
+							teamInfo.setWeek(week);
+							teamInfo.setMatches(matches);
+							continue;
+						case 2:
+							String league = info;
+							teamInfo.setLeague(league);
+							continue;
+						case 3:
+							String date_time = info.replace(" ", "");
+							String date = info.substring(0,5);
+							String dwc_info = null;
+							//dwc_info = client.get(wc+date_time);
+
+							//if(dwc_info!=null && dwc_info.equals(wc+date_time)){
+							//	checkDate = false;
+							//	break;
+							//}else{
+							String time = date_time.substring(5);
+							teamInfo.setDate(date);
+							teamInfo.setTime(time);
+							//	client.add(wc+date_time, 0, wc+date_time);
+							continue;
+							//}
+						case 4:
+							int host_ranking = FileUtils.getTeamRanking(info);
+							teamInfo.setHost_ranking(host_ranking);
+							continue;
+						case 5:
+							String host_team = info;
+							teamInfo.setHost_team(host_team);
+							continue;
+						case 6:
+							String guest_team = info;
+							teamInfo.setGuest_team(guest_team);
+							continue;
+						case 0:
+							int guest_ranking = FileUtils.getTeamRanking(info);
+							teamInfo.setGuest_ranking(guest_ranking);
+							Transaction trans = new JdbcTransaction(sqlSession.getConnection());
+							dao.updateUnresultData(sqlSession,teamInfo);
+							try {
+								trans.commit();
+							} catch (SQLException e) {
+								e.printStackTrace();
+							}
+							teamInfo=new TeamInfo();
+							break;
+					}
+				}
+			}
+		}
 //		Document docOld = null;
 //		try {
 //			ConnectUtils conntectUtils = new ConnectUtils();

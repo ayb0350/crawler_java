@@ -91,21 +91,21 @@ public class GameSameOdds {
 								String game_date = oddsInfo[1];
 								String game_time = oddsInfo[2];
 								String odds_begin = oddsInfo[3];
-								double	 odds_sheng_begin = Double.valueOf(odds_begin.substring(0,4));
-								double	 odds_ping_begin = Double.valueOf(odds_begin.substring(7,11));
-								double	 odds_fu_begin = Double.valueOf(odds_begin.substring(14,18));
+								double	 odds_sheng_begin = Double.valueOf(odds_begin.substring(0,4).replace(" ",""));
+								double	 odds_ping_begin = Double.valueOf(odds_begin.substring(7,11).replace(" ",""));
+								double	 odds_fu_begin = Double.valueOf(odds_begin.substring(14).replace(" ",""));
 								System.out.println(oddsInfo[0]+"  "+oddsInfo[1]+"  "+oddsInfo[2]+"  "+oddsInfo[3]);
 								String odds_end = oddsInfo[4];
-								double	 odds_sheng_end = Double.valueOf(odds_end.substring(0,4));
-								double	 odds_ping_end = Double.valueOf(odds_end.substring(7,11));
-								double	 odds_fu_end = Double.valueOf(odds_end.substring(14,18));
+								double	 odds_sheng_end = Double.valueOf(odds_end.substring(0,4).replace(" ",""));
+								double	 odds_ping_end = Double.valueOf(odds_end.substring(7,11).replace(" ",""));
+								double	 odds_fu_end = Double.valueOf(odds_end.substring(14,18).replace(" ",""));
 								String host_team = oddsInfo[5];
 								String[] team_result = oddsInfo[6].split(":");
 								int host_result = -1;
 								int guest_result = -1;
 								for(int m3=0;m3<team_result.length;m3++){
-									host_result = Integer.valueOf(team_result[0]);
-									guest_result = Integer.valueOf(team_result[1]);
+									host_result = Integer.valueOf(team_result[0].replace(" ",""));
+									guest_result = Integer.valueOf(team_result[1].replace(" ",""));
 								}
 								String guest_team = oddsInfo[7];
 								String result_ = oddsInfo[8];
@@ -126,9 +126,9 @@ public class GameSameOdds {
 								so.setResult(result);
 								so.setGame_date(game_date);
 								so.setGame_time(game_time);
-								/*dao.addSameOdds(sqlSession,so);
+								dao.addSameOdds(sqlSession,so);
 								Transaction trans = new JdbcTransaction(sqlSession.getConnection());
-								trans.commit();*/
+								trans.commit();
 							}catch (Exception e){
 								e.printStackTrace();
 								continue;
@@ -143,5 +143,11 @@ public class GameSameOdds {
 		}
 		process = false;
 		return process;
+	}
+
+	public  static  void  main(String args[]){
+		String ss = " 6.0";
+		System.out.println(ss);
+		System.out.println(ss.replace(" ",""));
 	}
 }

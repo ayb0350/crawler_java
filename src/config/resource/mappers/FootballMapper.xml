@@ -192,4 +192,17 @@
 		where not exists (select * from t_game_same_odds so where so.team_id = fo.team_id and so.bocai_id = fo.bocai_id)
 	</select>
 
+	<select id="getUnresultList" resultType="String">
+		select date from t_team_info ti where ti.host_result = -1 or guest_result = -1 group by date
+	</select>
+
+	<delete id="deleteUnresultData" parameterType="String">
+		delete  from t_team_info  where date = #{datedata}
+	</delete>
+
+	<update id="updateUnresultData" parameterType="com.aspire.crawler.bean.TeamInfo">
+			update t_team_info ti set ti.host_result=#{host_result},ti.guest_result=#{guest_result}
+			where ti.week = #{week} and ti.league = #{league} and ti.matches = #{matches}
+			and ti.date = #{date} and ti.time = #{time}
+	</update>
 </mapper>
